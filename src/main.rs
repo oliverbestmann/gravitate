@@ -32,7 +32,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Chainscape".to_string(),
+                        title: "GAMENAME".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
                     }
