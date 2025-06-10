@@ -16,5 +16,5 @@ pub enum Screen {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((loading::plugin, gameplay::plugin, loading::plugin));
+    app.add_plugins((loading::plugin, gameplay::plugin, title::plugin));
 }
