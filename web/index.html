@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+
+    <title>Chainscape</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#112">
+
+    <style>
+        /* Styles for the loading screen */
+        :root {
+            --web-bg-color: #111;
+            --web-highlight: oklch(64.5% 0.260 2.47);
+            --web-color: white;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .center {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        body {
+            background-color: var(--web-bg-color);
+            color: var(--web-color);
+        }
+
+        #loading-screen {
+            display: none;
+        }
+
+        .spinner {
+            width: 128px;
+            height: 128px;
+            border: 64px solid transparent;
+            border-bottom-color: #222;
+            border-right-color: #333;
+            border-top-color: var(--web-highlight);
+            border-radius: 50%;
+            box-sizing: border-box;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <style>
+        #player-config {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 200px;
+            font-family: monospace;
+        }
+
+        #player-config button, #player-config input {
+            display: block;
+            width: 100%;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+            padding: 8px;
+            background: #222;
+            border: 1px solid var(--web-color);
+        }
+
+        input {
+            color: var(--web-color);
+        }
+
+        button {
+            color: var(--web-highlight);
+        }
+
+        #player-config label {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="center">
+
+<noscript>JavaScript support is required to run this app</noscript>
+<div id="loading-screen" class="center">
+    <span class="spinner"></span>
+</div>
+
+<form id="player-config" onsubmit="return startGame()">
+    <label for="username">
+        Choose a nickname for your highscore entry
+    </label>
+
+    <input type="text" id="username" name="username" placeholder="Your nickname">
+
+    <button type="submit">Start</button>
+</form>
+
+<script type="module">
+    // Automatically restart the audio context after user interaction
+    // Needs to be executed _before_ the game is loaded
+    // Taken from https://developer.chrome.com/blog/web-audio-autoplay/#moving-forward
+    (function () {
+        // An array of all contexts to resume on the page
+        const audioContextList = [];
+
+        // An array of various user interaction events we should listen for
+        const userInputEventNames = [
+            "click",
+            "contextmenu",
+            "auxclick",
+            "dblclick",
+            "mousedown",
+            "mouseup",
+            "pointerup",
+            "touchend",
+            "keydown",
+            "keyup",
+        ];
+
+        // A proxy object to intercept AudioContexts and
+        // add them to the array for tracking and resuming later
+        self.AudioContext = new Proxy(self.AudioContext, {
+            construct(target, args) {
+                const result = new target(...args);
+                audioContextList.push(result);
+                return result;
+            },
+        });
+
+        // To resume all AudioContexts being tracked
+        function resumeAllContexts(event) {
+            let count = 0;
+
+            audioContextList.forEach((context) => {
+                if (context.state !== "running") {
+                    context.resume();
+                } else {
+                    count++;
+                }
+            });
+
+            // If all the AudioContexts have now resumed then we
+            // unbind all the event listeners from the page to prevent
+            // unnecessary resume attempts
+            if (count == audioContextList.length) {
+                userInputEventNames.forEach((eventName) => {
+                    document.removeEventListener(eventName, resumeAllContexts);
+                });
+            }
+        }
+
+        // We bind the resume function for each user interaction
+        // event on the page
+        userInputEventNames.forEach((eventName) => {
+            document.addEventListener(eventName, resumeAllContexts);
+        });
+    })();
+</script>
+
+<script type="module">
+    import initGame from "./build/chainscape.js";
+
+    // load wasm in the background to warm up the cache
+    fetch("./build/chainscape_bg.wasm")
+
+    addEventListener("load", () => {
+        try {
+            const player = localStorage.getItem("chainscape.player") ?? "";
+            document.querySelector("#username").value = player;
+        } catch {
+            // do nothing
+        }
+    });
+
+    window.startGame = function startGame() {
+        // store player
+        window.Player = document.querySelector("#username").value;
+
+        // store player in localStorge for next time
+        try {
+            localStorage.setItem("chainscape.player", window.Player);
+        } catch {
+            // do nothing
+        }
+
+        void startGameAsync()
+
+        return false;
+    }
+
+    async function startGameAsync() {
+        observeGameStart();
+
+        await switchToLoader()
+
+        try {
+            await initGame()
+        } catch (error) {
+            if (!error.message.startsWith(
+                "Using exceptions for control flow, don't mind me. This isn't actually an error!"
+            )) {
+                throw error;
+            }
+        }
+    }
+
+    async function switchToLoader() {
+        document.querySelector("#loading-screen").style.display = "flex";
+        document.querySelector("#player-config").style.display = "none";
+        await animationFrame();
+    }
+
+    async function animationFrame() {
+        await new Promise(resolve => requestAnimationFrame(() => resolve()));
+    }
+
+    function observeGameStart() {
+        // Hide loading screen when the game starts.
+        const loadingScreen = document.querySelector("#loading-screen");
+
+        const observer = new MutationObserver((records) => {
+            for (const record of records) {
+                for (const addedNode of record.addedNodes) {
+                    if (addedNode instanceof HTMLCanvasElement) {
+                        if (addedNode.innerText.trim().length === 0) {
+                            // Add compatibility note
+                            addedNode.innerText =
+                                "Canvas support is required to run this app";
+                        }
+
+                        // A new canvas has been created, which means that the game has been loaded
+                        // Hide the loading screen!
+                        loadingScreen.style.display = "none";
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            }
+        });
+
+        observer.observe(document.body, {
+            subtree: false,
+            childList: true,
+            attributes: false,
+            characterData: false,
+        });
+    }
+</script>
+</body>
+</html>
