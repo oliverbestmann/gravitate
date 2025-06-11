@@ -1,6 +1,6 @@
+use crate::Pause;
 use crate::menus::Menu;
 use crate::screens::Screen;
-use crate::Pause;
 use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::Val::*};
 
 pub(super) fn plugin(app: &mut App) {

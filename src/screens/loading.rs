@@ -47,7 +47,7 @@ fn spawn_loading_screen(mut commands: Commands, assets: ResMut<AssetServer>) {
 }
 
 fn is_loading_time_reached(time: Res<Time>) -> bool {
-    let delay = if (cfg!(debug_assertions)) { 0.1 } else { 0.5 };
+    let delay = if cfg!(debug_assertions) { 0.1 } else { 0.5 };
     time.elapsed_secs() > delay
 }
 

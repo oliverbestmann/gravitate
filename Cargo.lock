@@ -2525,6 +2525,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "fastnoise-lite",
+ "image",
  "log",
  "ordered-float 5.0.0",
  "rand 0.9.1",

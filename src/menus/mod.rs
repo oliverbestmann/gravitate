@@ -8,10 +8,7 @@ use bevy::prelude::*;
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<Menu>();
 
-    app.add_plugins((
-        main::plugin,
-        pause::plugin,
-    ));
+    app.add_plugins((main::plugin, pause::plugin));
 }
 
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

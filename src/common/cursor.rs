@@ -1,6 +1,6 @@
+use crate::MainCamera;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::MainCamera;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<WorldCursor>();

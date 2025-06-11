@@ -15,7 +15,7 @@ impl FromWorld for Assets {
         let server = world.resource_mut::<AssetServer>();
 
         Self {
-            player: server.load("images/player.png"),
+            player: server.load("images/star.png"),
         }
     }
 }

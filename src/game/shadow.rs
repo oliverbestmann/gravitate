@@ -1,0 +1,147 @@
+use bevy::asset::RenderAssetUsages;
+use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use image::{RgbaImage, imageops};
+use std::collections::HashMap;
+use std::time::Instant;
+
+pub(super) fn plugin(app: &mut App) {
+    app.init_resource::<ShadowCache>();
+    app.add_observer(add_shadow_to_entity);
+    app.add_observer(remove_shadow_from_entry);
+}
+
+#[derive(Component, Reflect)]
+pub struct Shadow {
+    pub offset_z: f32,
+    pub sigma: f32,
+}
+
+#[derive(Component, Reflect)]
+#[relationship(relationship_target = Shadows)]
+struct ShadowOf(Entity);
+
+#[derive(Component, Reflect)]
+#[relationship_target(relationship = ShadowOf)]
+struct Shadows(Vec<Entity>);
+
+#[derive(Resource, Default)]
+struct ShadowCache {
+    images: HashMap<Handle<Image>, Handle<Image>>,
+}
+
+impl Default for Shadow {
+    fn default() -> Self {
+        Shadow {
+            offset_z: -0.1,
+            sigma: 3.0,
+        }
+    }
+}
+
+fn remove_shadow_from_entry(
+    trigger: Trigger<OnRemove, Shadow>,
+    mut commands: Commands,
+    shadows: Query<&Shadows>,
+) {
+    let Ok(shadows) = shadows.get(trigger.target()) else {
+        return;
+    };
+
+    for shadow in shadows.iter() {
+        // try to remove the shadow if it still exists
+        commands.entity(shadow).try_despawn();
+    }
+}
+
+fn add_shadow_to_entity(
+    trigger: Trigger<OnAdd, Shadow>,
+    mut commands: Commands,
+    parent_query: Query<(&Sprite, &Shadow)>,
+    mut images: ResMut<Assets<Image>>,
+    mut cache: ResMut<ShadowCache>,
+) -> Result {
+    let (sprite, shadow_desc) = parent_query.get(trigger.target())?;
+
+    if sprite.anchor != Anchor::Center {
+        return Err("anchor must be center for Shadow".into());
+    }
+
+    let shadow = match cache
+        .images
+        .get(&sprite.image)
+        .and_then(|handle| images.get_strong_handle(handle.into()))
+    {
+        Some(handle) => handle,
+        None => {
+            #[cfg(not(target_family = "wasm"))]
+            let start = Instant::now();
+
+            // we could not get a strong handle to the cached shadow.
+            // need to create a new shadow from the image
+            let image = images.get(&sprite.image).ok_or("image not found")?;
+
+            // convert & create shadow
+            let image = image.clone().try_into_dynamic()?;
+            let shadow = generate_shadow_from_alpha(image.into_rgba8(), shadow_desc.sigma)?;
+
+            // create a bevy image from the shadow
+            let shadow = Image::from_dynamic(shadow.into(), true, RenderAssetUsages::RENDER_WORLD);
+
+            #[cfg(not(target_family = "wasm"))]
+            {
+                let duration = Instant::now().duration_since(start);
+                info!(
+                    "Creating shadow of size {}x{} took {:?}",
+                    shadow.width(),
+                    shadow.height(),
+                    duration
+                );
+            }
+
+            let handle = images.add(shadow);
+
+            // cache a weak clone of the handle
+            cache
+                .images
+                .insert(sprite.image.clone_weak(), handle.clone_weak());
+
+            handle
+        }
+    };
+
+    // spawn a new sprite as child
+    commands.entity(trigger.target()).with_child((
+        Name::new("Shadow"),
+        ShadowOf(trigger.target()),
+        Sprite {
+            image: shadow,
+            custom_size: sprite.custom_size.map(|size| 2.0 * size),
+            anchor: Anchor::Center,
+            ..default()
+        },
+        Transform::from_xyz(0., 0., shadow_desc.offset_z),
+    ));
+
+    Ok(())
+}
+
+fn generate_shadow_from_alpha(image: RgbaImage, sigma: f32) -> Result<RgbaImage> {
+    // start with a transparent black image
+    let mut shadow = RgbaImage::new(image.width() * 2, image.height() * 2);
+
+    let offset_x = image.width() / 2;
+    let offset_y = image.height() / 2;
+
+    // copy alpha channel into the center of the image
+    for (src, dst) in image.rows().zip(shadow.rows_mut().skip(offset_y as usize)) {
+        for (image::Rgba(sp), image::Rgba(dp)) in src.zip(dst.skip(offset_x as usize)) {
+            dp[3] = sp[3];
+        }
+    }
+
+    // blur alpha channel
+    shadow = imageops::fast_blur(&shadow, sigma);
+
+    Ok(shadow)
+}

@@ -1,5 +1,5 @@
 use bevy::app::App;
-use bevy::math::{vec2, FloatPow, Vec2};
+use bevy::math::{FloatPow, Vec2, vec2};
 use bevy::prelude::Resource;
 use fastnoise_lite::FastNoiseLite;
 use rand::{Rng, RngCore, SeedableRng};
