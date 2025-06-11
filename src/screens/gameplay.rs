@@ -4,8 +4,6 @@ use crate::Pause;
 use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::Val::*};
 
 pub(super) fn plugin(app: &mut App) {
-    // app.add_systems(OnEnter(Screen::Gameplay), game::spawn_level);
-
     // Toggle pause on key press.
     app.add_systems(
         Update,

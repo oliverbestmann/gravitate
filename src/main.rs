@@ -4,75 +4,86 @@
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
 use bevy::render::camera;
+use bevy::window::WindowResolution;
 use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod asset_tracking;
-mod common;
+pub mod common;
 pub mod game;
 pub mod menus;
+pub mod player_name;
 pub mod screens;
 pub mod ui;
 
 fn main() -> AppExit {
-    App::new().add_plugins(AppPlugin).run()
+    App::new().add_plugins(app_plugin).run()
 }
 
-pub struct AppPlugin;
+fn app_plugin(app: &mut App) {
+    let scale = 2.0;
 
-impl Plugin for AppPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(
-            DefaultPlugins
-                .set(AssetPlugin {
-                    // Wasm builds will check for meta files (that don't exist) if this isn't set.
-                    // This causes errors and even panics on web build on itch.
-                    // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
-                    meta_check: AssetMetaCheck::Never,
+    app.add_plugins(
+        DefaultPlugins
+            .set(AssetPlugin {
+                // Wasm builds will check for meta files (that don't exist) if this isn't set.
+                // This causes errors and even panics on web build on itch.
+                // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            })
+            .set(WindowPlugin {
+                primary_window: Window {
+                    title: "Gravitate".to_string(),
+                    fit_canvas_to_parent: true,
+                    resolution: WindowResolution::new(scale * 512.0, scale * 768.0)
+                        .with_scale_factor_override(1.0),
                     ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Window {
-                        title: "GAMENAME".to_string(),
-                        fit_canvas_to_parent: true,
-                        ..default()
-                    }
-                    .into(),
-                    ..default()
-                }),
-        );
+                }
+                .into(),
+                ..default()
+            }),
+    );
 
-        app.add_plugins((
-            avian2d::PhysicsPlugins::default(),
-            #[cfg(debug_assertions)]
-            avian2d::debug_render::PhysicsDebugPlugin::default(),
-        ));
+    app.add_plugins((avian2d::PhysicsPlugins::default(),));
 
-        // Add other plugins.
-        app.add_plugins((
-            asset_tracking::plugin,
-            screens::plugin,
-            game::plugin,
-            common::plugin,
-        ));
+    #[cfg(debug_assertions)]
+    app.add_plugins((
+        avian2d::debug_render::PhysicsDebugPlugin::default(),
+        EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        },
+        WorldInspectorPlugin::new(),
+    ));
 
-        // Order new `AppSystems` variants by adding them here:
-        app.configure_sets(
-            Update,
-            (
-                AppSystems::TickTimers,
-                AppSystems::RecordInput,
-                AppSystems::Update,
-            )
-                .chain(),
-        );
+    // Add other plugins.
+    app.add_plugins((
+        asset_tracking::plugin,
+        common::plugin,
+        screens::plugin,
+        menus::plugin,
+        ui::plugin,
+        game::plugin,
+    ));
 
-        // Set up the `Pause` state.
-        app.init_state::<Pause>();
-        app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
+    // Order new `AppSystems` variants by adding them here:
+    app.configure_sets(
+        Update,
+        (
+            AppSystems::TickTimers,
+            AppSystems::RecordInput,
+            AppSystems::Update,
+        )
+            .chain(),
+    );
 
-        // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
-    }
+    // Set up the `Pause` state.
+    app.init_state::<Pause>();
+    app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
+
+    // Spawn the main camera.
+    app.add_systems(Startup, spawn_camera);
 }
 
 /// High-level groupings of systems for the app in the `Update` schedule.
@@ -114,6 +125,5 @@ fn spawn_camera(mut commands: Commands) {
         Camera2d,
         MainCamera,
         Projection::Orthographic(projection),
-        Msaa::Off,
     ));
 }

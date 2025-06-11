@@ -1,9 +1,14 @@
 use bevy::app::App;
-use bevy::prelude::States;
+use bevy::prelude::{AppExtStates, States};
 
 mod gameplay;
 mod loading;
 mod title;
+
+pub fn plugin(app: &mut App) {
+    app.init_state::<Screen>();
+    app.add_plugins((loading::plugin, gameplay::plugin, title::plugin));
+}
 
 /// The game's main screen states.
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -13,8 +18,4 @@ pub enum Screen {
     Loading,
     Title,
     Gameplay,
-}
-
-pub fn plugin(app: &mut App) {
-    app.add_plugins((loading::plugin, gameplay::plugin, title::plugin));
 }

@@ -18,10 +18,11 @@ pub struct Marker {
 }
 
 fn update_markers(
-    mut markers: Query<(&mut Transform, &Marker)>,
+    mut commands: Commands,
+    mut markers: Query<(Entity, &mut Transform, &Marker)>,
     transforms: Query<&Transform, Without<Marker>>,
 ) {
-    for (mut marker_transform, marker) in markers.iter_mut() {
+    for (marker_entity, mut marker_transform, marker) in markers.iter_mut() {
         let target = match &marker.target {
             MarkerTarget::Static { position } => *position,
             MarkerTarget::Dynamic { target, offset } => {
@@ -36,7 +37,13 @@ fn update_markers(
         let direction = (target - marker_transform.translation.xy()).normalize();
         let offset = (direction * marker.offset).extend(marker.offset_z);
 
-        marker_transform.translation = (marker_transform.translation + offset);
+        let Ok(base) = transforms.get(marker.follow) else {
+            // follow is gone, despawn marker
+            commands.entity(marker_entity).try_despawn();
+            continue;
+        };
+
+        marker_transform.translation = base.translation + offset;
         marker_transform.rotation = Quat::from_rotation_z(direction.to_angle());
     }
 }

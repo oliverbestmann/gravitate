@@ -13,9 +13,12 @@ bevy = { version = "0.16.1", default-features = false, features = [
     "bevy_text",
     "bevy_ui",
     "bevy_window",
+    "bevy_picking",
+    "bevy_ui_picking_backend",
     "default_font",
     "multi_threaded",
     "png",
+    "jpeg",
     # "vorbis",
     "webgl2",
     "bevy_winit",
@@ -37,6 +40,7 @@ ordered-float = "5.0.0"
 fastnoise-lite = "1.1.1"
 avian2d = { version = "0.3.1" }
 web-sys = { version = "0.3.77", features = ["Window"] }
+bevy-inspector-egui = "0.31.0"
 
 [features]
 # Default to a native dev build.
