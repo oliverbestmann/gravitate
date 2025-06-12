@@ -7,23 +7,23 @@ use std::sync::Mutex;
 
 pub fn plugin(app: &mut App) {
     let r = rand::rngs::SmallRng::seed_from_u64(1);
-    app.insert_resource(Rand(Mutex::new(r)));
+    app.insert_resource(Rand(r));
 }
 
 #[derive(Resource)]
-pub struct Rand(Mutex<rand::rngs::SmallRng>);
+pub struct Rand(rand::rngs::SmallRng);
 
 impl RngCore for Rand {
     fn next_u32(&mut self) -> u32 {
-        self.0.lock().unwrap().next_u32()
+        self.0.next_u32()
     }
 
     fn next_u64(&mut self) -> u64 {
-        self.0.lock().unwrap().next_u64()
+        self.0.next_u64()
     }
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.0.lock().unwrap().fill_bytes(dest)
+        self.0.fill_bytes(dest)
     }
 }
 

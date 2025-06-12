@@ -1,7 +1,8 @@
+use crate::AppSystems;
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, update_markers);
+    app.add_systems(Update, update_markers.in_set(AppSystems::Update));
 }
 
 pub enum MarkerTarget {

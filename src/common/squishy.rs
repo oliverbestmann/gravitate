@@ -1,9 +1,10 @@
 use bevy::app::{App, Update};
 use bevy::math::Vec2;
-use bevy::prelude::{Component, Query, Res, Time, Transform};
+use bevy::prelude::{Component, IntoScheduleConfigs, Query, Res, Time, Transform};
 use bevy::time::Virtual;
 use std::f32::consts::PI;
 use std::time::Duration;
+use crate::AppSystems;
 
 #[derive(Component)]
 pub struct Squishy {
@@ -14,7 +15,7 @@ pub struct Squishy {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, apply_squishy);
+    app.add_systems(Update, apply_squishy.in_set(AppSystems::Update));
 }
 
 fn apply_squishy(time: Res<Time<Virtual>>, mut squishies: Query<(&mut Transform, &Squishy)>) {

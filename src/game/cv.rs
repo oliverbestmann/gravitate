@@ -1,3 +1,4 @@
+use crate::game::layer::Layer;
 use bevy::prelude::Color;
 
 pub const COLOR_BACKGROUND: Color = srgb_from_u32(0x553683ff);
@@ -10,3 +11,10 @@ const fn srgb_from_u32(color: u32) -> Color {
 
     Color::srgba(r, g, b, a)
 }
+
+pub const LAYER_ROCKET: Layer = Layer(1.0);
+pub const LAYER_OFFSET_ROCKET_FIN_BG: Layer = Layer(-0.6);
+pub const LAYER_OFFSET_ROCKET_PLUME: Layer = Layer(-0.5);
+pub const LAYER_OFFSET_ROCKET_FIN_FG: Layer = Layer(0.1);
+
+pub const LAYER_STARS: Layer = Layer(-1.0);

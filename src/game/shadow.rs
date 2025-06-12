@@ -1,7 +1,7 @@
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use image::{RgbaImage, imageops};
+use image::{imageops, GrayAlphaImage, GrayImage, Luma, LumaA, Rgba, RgbaImage};
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -33,7 +33,7 @@ struct ShadowCache {
 impl Default for Shadow {
     fn default() -> Self {
         Shadow {
-            offset_z: -0.1,
+            offset_z: -0.01,
             sigma: 3.0,
         }
     }
@@ -56,12 +56,12 @@ fn remove_shadow_from_entry(
 
 fn add_shadow_to_entity(
     trigger: Trigger<OnAdd, Shadow>,
+    query_sprite: Query<(&Sprite, &Shadow)>,
     mut commands: Commands,
-    parent_query: Query<(&Sprite, &Shadow)>,
     mut images: ResMut<Assets<Image>>,
     mut cache: ResMut<ShadowCache>,
 ) -> Result {
-    let (sprite, shadow_desc) = parent_query.get(trigger.target())?;
+    let (sprite, shadow_desc) = query_sprite.get(trigger.target())?;
 
     if sprite.anchor != Anchor::Center {
         return Err("anchor must be center for Shadow".into());
@@ -126,22 +126,44 @@ fn add_shadow_to_entity(
     Ok(())
 }
 
-fn generate_shadow_from_alpha(image: RgbaImage, sigma: f32) -> Result<RgbaImage> {
+fn generate_shadow_from_alpha(image: RgbaImage, sigma: f32) -> Result<GrayAlphaImage> {
     // start with a transparent black image
-    let mut shadow = RgbaImage::new(image.width() * 2, image.height() * 2);
+    let mut mask = GrayAlphaImage::new(image.width() * 2, image.height() * 2);
 
     let offset_x = image.width() / 2;
     let offset_y = image.height() / 2;
 
-    // copy alpha channel into the center of the image
-    for (src, dst) in image.rows().zip(shadow.rows_mut().skip(offset_y as usize)) {
-        for (image::Rgba(sp), image::Rgba(dp)) in src.zip(dst.skip(offset_x as usize)) {
-            dp[3] = sp[3];
+    // copy alpha channel into the center of the mask image
+    for (src, dst) in image.rows().zip(mask.rows_mut().skip(offset_y as usize)) {
+        for (Rgba(sp), LumaA(dp)) in src.zip(dst.skip(offset_x as usize)) {
+            dp[1] = sp[3];
         }
     }
 
-    // blur alpha channel
-    shadow = imageops::fast_blur(&shadow, sigma);
+    // increase the size of the mask by first applying a small blur
+    let mut mask = imageops::fast_blur(&mask, 1.0);
+
+    // and then using a threshold
+    mask.pixels_mut()
+        .for_each(|LumaA([_, px])| *px = px.saturating_mul(5));
+
+    // now blur the mask to create the base shadow
+    let mut shadow = GrayAlphaImage::new(mask.width(), mask.height());
+
+    add(&mut shadow, &imageops::fast_blur(&mask, sigma), 2);
+
+    // reduce influence of the mask for pixels with wider shadow blur
+    add(&mut shadow, &imageops::fast_blur(&mask, sigma * 2.0), 3);
+
+    // reduce influence of the mask for pixels with wider shadow blur
+    add(&mut shadow, &imageops::fast_blur(&mask, sigma * 4.0), 4);
 
     Ok(shadow)
+}
+
+#[inline]
+fn add(target: &mut GrayAlphaImage, source: &GrayAlphaImage, divider: u8) {
+    for (LumaA([_, tp]), LumaA([_, sp])) in target.pixels_mut().zip(source.pixels()) {
+        *tp = tp.saturating_add(*sp / divider);
+    }
 }

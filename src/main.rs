@@ -21,8 +21,10 @@ fn main() -> AppExit {
     App::new().add_plugins(app_plugin).run()
 }
 
+const WORLD_SCALE: f32 = 2.0;
+
 fn app_plugin(app: &mut App) {
-    let scale = 2.0;
+    let window_scale_factor = 2.0;
 
     app.add_plugins(
         DefaultPlugins
@@ -37,8 +39,8 @@ fn app_plugin(app: &mut App) {
                 primary_window: Window {
                     title: "Gravitate".to_string(),
                     fit_canvas_to_parent: true,
-                    resolution: WindowResolution::new(scale * 512.0, scale * 768.0)
-                        .with_scale_factor_override(1.0),
+                    resolution: WindowResolution::new(window_scale_factor * 512.0, window_scale_factor * 768.0)
+                        .with_scale_factor_override(window_scale_factor),
                     ..default()
                 }
                 .into(),
@@ -74,6 +76,7 @@ fn app_plugin(app: &mut App) {
             AppSystems::TickTimers,
             AppSystems::RecordInput,
             AppSystems::Update,
+            AppSystems::UpdateCamera,
         )
             .chain(),
     );
@@ -97,6 +100,8 @@ enum AppSystems {
     RecordInput,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    /// Update the camera
+    UpdateCamera,
 }
 
 /// Whether or not the game is paused.
@@ -115,9 +120,8 @@ pub struct MainCamera;
 fn spawn_camera(mut commands: Commands) {
     let mut projection = OrthographicProjection::default_2d();
 
-    projection.scaling_mode = camera::ScalingMode::AutoMin {
-        min_height: 768.0,
-        min_width: 512.0,
+    projection.scaling_mode = camera::ScalingMode::FixedHorizontal {
+        viewport_width: WORLD_SCALE * 512.0,
     };
 
     commands.spawn((
