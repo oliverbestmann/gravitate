@@ -82,6 +82,7 @@ fn app_plugin(app: &mut App) {
         (
             AppSystems::TickTimers,
             AppSystems::RecordInput,
+            AppSystems::PrePhysics,
             PhysicsSet::StepSimulation,
             PhysicsSet::Sync,
             AppSystems::Update,
@@ -89,10 +90,6 @@ fn app_plugin(app: &mut App) {
         )
             .chain(),
     );
-
-    // Set up the `Pause` state.
-    app.init_state::<Pause>();
-    app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
 
     // Spawn the main camera.
     app.add_systems(Startup, spawn_camera);
@@ -107,20 +104,13 @@ enum AppSystems {
     TickTimers,
     /// Record player input.
     RecordInput,
+    /// Runs before physics runs
+    PrePhysics,
     /// Do everything else (consider splitting this into further variants).
     Update,
     /// Update the camera
     UpdateCamera,
 }
-
-/// Whether or not the game is paused.
-#[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
-#[states(scoped_entities)]
-struct Pause(pub bool);
-
-/// A system set for systems that shouldn't run while the game is paused.
-#[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug)]
-struct PausableSystems;
 
 /// Used to help identify our main camera
 #[derive(Component)]

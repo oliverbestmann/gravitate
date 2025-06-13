@@ -19,7 +19,7 @@ fn transfer_layer_to_z(
     query: Query<(&mut Transform, &Layer, Option<&Name>)>,
 ) -> Result {
     let (mut transform, layer, name) = query.get_inner(trigger.target())?;
-    info!("Applying Z of {} to {:?}", layer.0, name);
+    debug!("Applying Z of {} to {:?}", layer.0, name);
 
     transform.translation.z = layer.0;
     Ok(())

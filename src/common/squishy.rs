@@ -1,10 +1,10 @@
+use crate::AppSystems;
 use bevy::app::{App, Update};
 use bevy::math::Vec2;
 use bevy::prelude::{Component, IntoScheduleConfigs, Query, Res, Time, Transform};
 use bevy::time::Virtual;
 use std::f32::consts::PI;
 use std::time::Duration;
-use crate::AppSystems;
 
 #[derive(Component)]
 pub struct Squishy {

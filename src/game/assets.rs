@@ -28,12 +28,12 @@ impl FromWorld for Assets {
 
             star_small: server.load("images/star-small.png"),
             star_large: server.load("images/star-large.png"),
-            
+
             plume: [
                 server.load("images/plume1.png"),
                 server.load("images/plume2.png"),
-                server.load("images/plume3.png")
-            ]
+                server.load("images/plume3.png"),
+            ],
         }
     }
 }

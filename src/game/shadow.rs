@@ -1,7 +1,7 @@
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use image::{imageops, GrayAlphaImage, GrayImage, Luma, LumaA, Rgba, RgbaImage};
+use image::{GrayAlphaImage, LumaA, Rgba, RgbaImage, imageops};
 use std::collections::HashMap;
 use std::time::Instant;
 

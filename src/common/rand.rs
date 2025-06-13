@@ -3,7 +3,6 @@ use bevy::math::{FloatPow, Vec2, vec2};
 use bevy::prelude::Resource;
 use fastnoise_lite::FastNoiseLite;
 use rand::{Rng, RngCore, SeedableRng};
-use std::sync::Mutex;
 
 pub fn plugin(app: &mut App) {
     let r = rand::rngs::SmallRng::seed_from_u64(1);

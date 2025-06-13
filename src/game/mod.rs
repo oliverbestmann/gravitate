@@ -4,14 +4,14 @@ use bevy::prelude::*;
 pub mod assets;
 pub mod camera;
 pub mod cv;
-pub mod level;
-pub mod player;
-pub mod shadow;
-pub mod wiggle;
-pub mod rocket;
-pub mod layer;
 pub mod input;
 pub mod input_viz;
+pub mod layer;
+pub mod level;
+pub mod player;
+pub mod rocket;
+pub mod shadow;
+pub mod wiggle;
 
 pub use assets::Assets;
 

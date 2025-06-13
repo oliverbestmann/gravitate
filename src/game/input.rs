@@ -1,6 +1,7 @@
-use crate::{AppSystems, MainCamera, PausableSystems};
-use bevy::input::mouse::MouseButtonInput;
+use crate::common::pause::{PausableSystems, Pause};
+use crate::{AppSystems, MainCamera};
 use bevy::input::ButtonState;
+use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use std::time::Duration;
@@ -17,8 +18,8 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     app.add_observer(input_deactivated);
-    app.add_observer(slow_time_on_input);
-    app.add_observer(reset_time_after_input);
+
+    app.add_systems(OnEnter(Pause(true)), cancel_all_inputs_on_pause);
 }
 
 #[derive(Component)]
@@ -78,38 +79,45 @@ fn mouse_input_start(
     target_query: Query<(Entity, Has<InputActive>), With<Input>>,
     windows: Query<&Window, With<PrimaryWindow>>,
 ) {
-    for event in events.read() {
-        let Some(cursor) = windows
-            .get(event.window)
-            .ok()
-            .and_then(Window::cursor_position)
-        else {
-            warn!("No window or cursor for event");
-            return;
-        };
+    let Some(event) = events
+        .read()
+        .filter(|ev| ev.button == MouseButton::Left)
+        .last()
+    else {
+        return;
+    };
 
-        match event.state {
-            ButtonState::Pressed => {
-                for (entity, active) in target_query {
-                    if active {
-                        // already active on this component
-                        continue;
-                    }
+    let Some(cursor) = windows
+        .get(event.window)
+        .ok()
+        .and_then(Window::cursor_position)
+    else {
+        warn!("No window or cursor for event");
+        return;
+    };
 
-                    commands.entity(entity).insert(InputActive {
-                        start: cursor,
-                        end: cursor,
-                        touch_id: None,
-                    });
+    info!("Event: {:?}", event.state);
+    match event.state {
+        ButtonState::Pressed => {
+            for (entity, active) in target_query {
+                if active {
+                    // already active on this component
+                    continue;
                 }
-            }
 
-            ButtonState::Released => {
-                // remove the input component from the target if it exists
-                for (entity, active) in target_query {
-                    if active {
-                        commands.entity(entity).remove::<InputActive>();
-                    }
+                commands.entity(entity).insert(InputActive {
+                    start: cursor,
+                    end: cursor,
+                    touch_id: None,
+                });
+            }
+        }
+
+        ButtonState::Released => {
+            // remove the input component from the target if it exists
+            for (entity, active) in target_query {
+                if active {
+                    commands.entity(entity).remove::<InputActive>();
                 }
             }
         }
@@ -144,10 +152,6 @@ fn update_input_state(
     }
 }
 
-fn slow_time_on_input(_: Trigger<OnAdd, InputActive>, mut time: ResMut<Time<Virtual>>) {
-    time.set_relative_speed(0.05);
-}
-
 fn input_deactivated(
     trigger: Trigger<OnRemove, InputActive>,
     mut commands: Commands,
@@ -158,7 +162,7 @@ fn input_deactivated(
         return;
     };
 
-    let Some(state) = input.state(&*camera) else {
+    let Some(state) = input.state(&camera) else {
         return;
     };
 
@@ -173,6 +177,11 @@ fn input_deactivated(
     commands.entity(trigger.target()).trigger(thrust);
 }
 
-fn reset_time_after_input(_: Trigger<OnRemove, InputActive>, mut time: ResMut<Time<Virtual>>) {
-    time.set_relative_speed(1.0);
+fn cancel_all_inputs_on_pause(mut commands: Commands, inputs: Query<(Entity, &mut InputActive)>) {
+    info!("Cancel all active inputs, if any");
+    for (entity, mut input) in inputs {
+        input.start = Vec2::ZERO;
+        input.end = Vec2::ZERO;
+        commands.entity(entity).remove::<InputActive>();
+    }
 }

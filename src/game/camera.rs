@@ -1,6 +1,8 @@
-use crate::{AppSystems, MainCamera};
-use bevy::prelude::*;
 use crate::game::player::Player;
+use crate::{AppSystems, MainCamera};
+use avian2d::prelude::LinearVelocity;
+use bevy::math::ops::ln;
+use bevy::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, follow_player.in_set(AppSystems::UpdateCamera));
@@ -8,12 +10,27 @@ pub(super) fn plugin(app: &mut App) {
 
 fn follow_player(
     mut camera: Single<&mut Transform, With<MainCamera>>,
-    query_player: Query<&Transform, (With<Player>, Without<MainCamera>)>,
+    time: Res<Time>,
+    query_player: Query<(&Transform, &LinearVelocity), (With<Player>, Without<MainCamera>)>,
 ) {
-    let Ok(player) = query_player.single() else {
+    let Ok((player_transform, player_velocity)) = query_player.single() else {
         return;
     };
 
-    camera.translation.x = player.translation.x;
-    camera.translation.y = player.translation.y;
+    let mut current = camera.translation.xy();
+
+    // target the position the player might be soon
+    let offset = (player_velocity.0 * 4.0).clamp_length_max(512.0);
+    let target = player_transform.translation.xy() + offset;
+
+    // nudge the position a little
+    current.smooth_nudge(&target, ln(5.0), time.delta_secs());
+
+    info!(
+        "Nudge by {}",
+        current.xy().distance(camera.translation.xy())
+    );
+
+    camera.translation.x = current.x;
+    camera.translation.y = current.y;
 }

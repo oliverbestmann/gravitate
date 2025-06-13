@@ -48,7 +48,7 @@ fn visualize_thrust_input(
         return;
     };
 
-    let Some(state) = input.state(&*input_transform) else {
+    let Some(state) = input.state(&input_transform) else {
         burn_time_visibility.set_if_neq(Visibility::Hidden);
         return;
     };

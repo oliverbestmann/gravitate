@@ -1,34 +1,30 @@
 use crate::common::rand::{Generate, Rand};
 use crate::game;
-use crate::game::cv::{LAYER_ROCKET, LAYER_STARS};
-use crate::game::rocket;
+use crate::game::cv::LAYER_STARS;
+use crate::game::player;
 use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
 use crate::screens::Screen;
-use avian2d::prelude::{LinearVelocity, Sensor};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use rand::prelude::IndexedRandom;
 use rand::Rng;
+use rand::prelude::IndexedRandom;
 use std::f32::consts::PI;
-use crate::game::input::Input;
-use crate::game::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), (spawn_level, spawn_stars));
 }
 
 pub fn spawn_level(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<game::Assets>) {
-    commands.spawn((
-        Name::new("Player"),
-        StateScoped(Screen::Gameplay),
-        LinearVelocity(vec2(0., 100.)),
-        Sensor,
-        Player,
-        Input,
-        LAYER_ROCKET,
-        rocket::bundle(&assets, &mut rand),
-    ));
+    commands
+        .spawn((
+            Name::new("Player"),
+            StateScoped(Screen::Gameplay),
+            player::bundle(&assets, &mut rand),
+        ))
+        .observe(player::slow_time_on_input)
+        .observe(player::reset_time_after_input)
+        .observe(player::handle_on_thrust);
 }
 
 fn spawn_stars(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<game::Assets>) {
