@@ -1,8 +1,9 @@
 use crate::common::rand::Rand;
+use crate::game;
+use crate::game::attraction::Attractable;
 use crate::game::cv::LAYER_ROCKET;
 use crate::game::input::{Input, InputActive, OnThurst};
 use crate::game::rocket;
-use crate::game;
 use avian2d::prelude::{ExternalForce, LinearVelocity};
 use bevy::prelude::*;
 use std::time::Duration;
@@ -24,8 +25,9 @@ pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
     (
         rocket::bundle(assets, rand),
         LAYER_ROCKET,
-        LinearVelocity(vec2(0., 100.)),
+        LinearVelocity::ZERO,
         ExternalForce::ZERO.with_persistence(false),
+        Attractable,
         Player,
         Input,
     )

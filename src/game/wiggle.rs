@@ -7,6 +7,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
+#[require(Transform)]
 pub struct Wiggle {
     pub noise: FastNoiseLite,
     pub scale_rotation: f32,

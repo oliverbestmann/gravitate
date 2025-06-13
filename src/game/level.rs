@@ -1,9 +1,9 @@
 use crate::common::rand::{Generate, Rand};
 use crate::game;
 use crate::game::cv::LAYER_STARS;
-use crate::game::player;
 use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
+use crate::game::{planet, player};
 use crate::screens::Screen;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -25,6 +25,18 @@ pub fn spawn_level(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<g
         .observe(player::slow_time_on_input)
         .observe(player::reset_time_after_input)
         .observe(player::handle_on_thrust);
+
+    // spawn a planet
+    commands.spawn((
+        Transform::from_xyz(0., 350., 0.),
+        planet::bundle(&assets.planets[0], &mut rand, 128.0),
+    ));
+
+    // spawn a planet
+    commands.spawn((
+        Transform::from_xyz(0., 650., 0.),
+        planet::bundle(&assets.planets[1], &mut rand, 128.0),
+    ));
 }
 
 fn spawn_stars(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<game::Assets>) {

@@ -15,6 +15,21 @@ pub struct Assets {
     pub star_large: Handle<Image>,
 
     pub plume: [Handle<Image>; 3],
+
+    pub planets: Vec<PlanetAssets>,
+}
+
+#[derive(Clone)]
+pub struct PlanetAssets {
+    pub images: Vec<Handle<Image>>,
+}
+
+impl PlanetAssets {
+    pub fn new(images: impl Into<Vec<Handle<Image>>>) -> Self {
+        Self {
+            images: images.into(),
+        }
+    }
 }
 
 impl FromWorld for Assets {
@@ -33,6 +48,22 @@ impl FromWorld for Assets {
                 server.load("images/plume1.png"),
                 server.load("images/plume2.png"),
                 server.load("images/plume3.png"),
+            ],
+
+            planets: vec![
+                PlanetAssets::new([
+                    server.load("images/planet-earth-1.png"),
+                    server.load("images/planet-earth-2.png"),
+                    server.load("images/planet-earth-3.png"),
+                    server.load("images/planet-earth-4.png"),
+                ]),
+                PlanetAssets::new([
+                    server.load("images/planet-2-1.png"),
+                    server.load("images/planet-2-2.png"),
+                    server.load("images/planet-2-3.png"),
+                    server.load("images/planet-2-4.png"),
+                    server.load("images/planet-2-5.png"),
+                ]),
             ],
         }
     }

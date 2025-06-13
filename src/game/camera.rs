@@ -26,11 +26,6 @@ fn follow_player(
     // nudge the position a little
     current.smooth_nudge(&target, ln(5.0), time.delta_secs());
 
-    info!(
-        "Nudge by {}",
-        current.xy().distance(camera.translation.xy())
-    );
-
     camera.translation.x = current.x;
     camera.translation.y = current.y;
 }

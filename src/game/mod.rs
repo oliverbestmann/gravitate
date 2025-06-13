@@ -2,12 +2,14 @@ use avian2d::prelude::Gravity;
 use bevy::prelude::*;
 
 pub mod assets;
+pub mod attraction;
 pub mod camera;
 pub mod cv;
 pub mod input;
 pub mod input_viz;
 pub mod layer;
 pub mod level;
+pub mod planet;
 pub mod player;
 pub mod rocket;
 pub mod shadow;
@@ -27,6 +29,8 @@ pub fn plugin(app: &mut App) {
         layer::plugin,
         input::plugin,
         input_viz::plugin,
+        planet::plugin,
+        attraction::plugin,
     ));
 
     app.insert_resource(ClearColor(cv::COLOR_BACKGROUND));

@@ -156,8 +156,8 @@ fn apply_plume_visibility(
     rockets: Query<Has<Thrust>, With<Rocket>>,
     plumes: Query<(&ChildOf, &mut Visibility), With<Plume>>,
 ) {
-    for (parent, mut plume_visibility) in plumes {
-        let has_thrust = rockets.get(parent.get()).unwrap_or_default();
+    for (child_of, mut plume_visibility) in plumes {
+        let has_thrust = rockets.get(child_of.parent()).unwrap_or_default();
 
         let visibility = if has_thrust {
             Visibility::Inherited

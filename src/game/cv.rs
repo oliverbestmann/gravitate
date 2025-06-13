@@ -18,6 +18,8 @@ pub const LAYER_OFFSET_ROCKET_FIN_BG: Layer = Layer(-0.6);
 pub const LAYER_OFFSET_ROCKET_PLUME: Layer = Layer(-0.5);
 pub const LAYER_OFFSET_ROCKET_FIN_FG: Layer = Layer(0.1);
 
-pub const LAYER_STARS: Layer = Layer(-1.0);
+pub const LAYER_STARS: Layer = Layer(-2.0);
 
 pub const LAYER_PLAYER_INPUT: Layer = Layer(2.0);
+
+pub const LAYER_PLANETS: Layer = Layer(-1.0);

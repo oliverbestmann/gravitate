@@ -104,7 +104,7 @@ enum AppSystems {
     TickTimers,
     /// Record player input.
     RecordInput,
-    /// Runs before physics runs
+    /// Runs before physics runs, good place to update forces
     PrePhysics,
     /// Do everything else (consider splitting this into further variants).
     Update,
