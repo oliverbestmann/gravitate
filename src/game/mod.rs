@@ -10,6 +10,8 @@ pub mod shadow;
 pub mod wiggle;
 pub mod rocket;
 pub mod layer;
+pub mod input;
+pub mod input_viz;
 
 pub use assets::Assets;
 
@@ -23,6 +25,8 @@ pub fn plugin(app: &mut App) {
         player::plugin,
         rocket::plugin,
         layer::plugin,
+        input::plugin,
+        input_viz::plugin,
     ));
 
     app.insert_resource(ClearColor(cv::COLOR_BACKGROUND));

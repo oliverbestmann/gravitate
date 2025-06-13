@@ -11,6 +11,7 @@ use bevy::sprite::Anchor;
 use rand::prelude::IndexedRandom;
 use rand::Rng;
 use std::f32::consts::PI;
+use crate::game::input::Input;
 use crate::game::player::Player;
 
 pub(super) fn plugin(app: &mut App) {
@@ -24,6 +25,7 @@ pub fn spawn_level(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<g
         LinearVelocity(vec2(0., 100.)),
         Sensor,
         Player,
+        Input,
         LAYER_ROCKET,
         rocket::bundle(&assets, &mut rand),
     ));

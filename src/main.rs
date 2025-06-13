@@ -3,6 +3,7 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
+use avian2d::prelude::PhysicsSet;
 use bevy::render::camera;
 use bevy::window::WindowResolution;
 use bevy::{asset::AssetMetaCheck, prelude::*};
@@ -39,8 +40,11 @@ fn app_plugin(app: &mut App) {
                 primary_window: Window {
                     title: "Gravitate".to_string(),
                     fit_canvas_to_parent: true,
-                    resolution: WindowResolution::new(window_scale_factor * 512.0, window_scale_factor * 768.0)
-                        .with_scale_factor_override(window_scale_factor),
+                    resolution: WindowResolution::new(
+                        window_scale_factor * 512.0,
+                        window_scale_factor * 768.0,
+                    )
+                    .with_scale_factor_override(window_scale_factor),
                     ..default()
                 }
                 .into(),
@@ -48,7 +52,10 @@ fn app_plugin(app: &mut App) {
             }),
     );
 
-    app.add_plugins((avian2d::PhysicsPlugins::default(),));
+    app.add_plugins((
+        avian2d::PhysicsPlugins::default(),
+        bevy_vector_shapes::Shape2dPlugin::default(),
+    ));
 
     #[cfg(debug_assertions)]
     app.add_plugins((
@@ -75,6 +82,8 @@ fn app_plugin(app: &mut App) {
         (
             AppSystems::TickTimers,
             AppSystems::RecordInput,
+            PhysicsSet::StepSimulation,
+            PhysicsSet::Sync,
             AppSystems::Update,
             AppSystems::UpdateCamera,
         )
