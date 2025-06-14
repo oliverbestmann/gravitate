@@ -1,6 +1,7 @@
 use crate::common::rand::{Generate, Rand};
 use crate::game;
 use crate::game::cv::LAYER_STARS;
+use crate::game::planet::CropCache;
 use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
 use crate::game::{planet, player};
@@ -15,12 +16,17 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), (spawn_level, spawn_stars));
 }
 
-pub fn spawn_level(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<game::Assets>) {
+pub fn spawn_level(
+    mut commands: Commands,
+    assets: Res<game::Assets>,
+    mut crop_cache: ResMut<CropCache>,
+    mut images: ResMut<Assets<Image>>,
+) {
     commands
         .spawn((
             Name::new("Player"),
             StateScoped(Screen::Gameplay),
-            player::bundle(&assets, &mut rand),
+            player::bundle(&assets),
         ))
         .observe(player::slow_time_on_input)
         .observe(player::reset_time_after_input)
@@ -29,13 +35,13 @@ pub fn spawn_level(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<g
     // spawn a planet
     commands.spawn((
         Transform::from_xyz(0., 350., 0.),
-        planet::bundle(&assets.planets[0], &mut rand, 128.0),
+        planet::bundle(&assets.planets[0], &mut crop_cache, &mut images, 128.0),
     ));
 
     // spawn a planet
     commands.spawn((
         Transform::from_xyz(0., 650., 0.),
-        planet::bundle(&assets.planets[1], &mut rand, 128.0),
+        planet::bundle(&assets.planets[1], &mut crop_cache, &mut images, 128.0),
     ));
 }
 
@@ -54,7 +60,7 @@ fn spawn_stars(mut commands: Commands, mut rand: ResMut<Rand>, assets: Res<game:
             Wiggle {
                 offset: point.floor(),
                 offset_angle: rotation,
-                ..Wiggle::with_seed(rand.random())
+                ..default()
             },
             Sprite {
                 image: Handle::clone(

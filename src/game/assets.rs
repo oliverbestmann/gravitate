@@ -63,6 +63,7 @@ impl FromWorld for Assets {
                     server.load("images/planet-2-3.png"),
                     server.load("images/planet-2-4.png"),
                     server.load("images/planet-2-5.png"),
+                    server.load("images/planet-2-6.png"),
                 ]),
             ],
         }

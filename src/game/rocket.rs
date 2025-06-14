@@ -1,5 +1,4 @@
 use crate::common::pause::PausableSystems;
-use crate::common::rand::Rand;
 use crate::game::cv::{
     LAYER_OFFSET_ROCKET_FIN_BG, LAYER_OFFSET_ROCKET_FIN_FG, LAYER_OFFSET_ROCKET_PLUME,
 };
@@ -11,7 +10,6 @@ use crate::{AppSystems, game};
 use avian2d::prelude::{Collider, ExternalForce, RigidBody};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use rand::Rng;
 use std::f32::consts::PI;
 use std::time::Duration;
 
@@ -35,43 +33,31 @@ pub struct Rocket;
 #[derive(Component)]
 pub struct Plume;
 
-pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
+pub fn bundle(assets: &game::Assets) -> impl Bundle {
     let fin_offset = vec2(0., -40.);
-
-    let mut plume = |idx: i32| {
-        (
-            Name::new("Plume"),
-            Shadow::default(),
-            Wiggle {
-                scale_rotation: 10f32.to_radians(),
-                ..Wiggle::with_seed(rand.random())
-            },
-            LAYER_OFFSET_ROCKET_PLUME.offset_by(idx),
-            Sprite {
-                image: assets.plume[idx as usize].clone(),
-                anchor: Anchor::Center,
-                ..default()
-            },
-        )
-    };
 
     // spawn the player
     (
         RigidBody::Dynamic,
         Collider::capsule(32., 48.),
         Rocket,
+        Visibility::Inherited,
         children![
             (
                 Name::new("PlumeGroup"),
                 Plume,
                 Transform::from_xyz(0., -56.0, 0.),
                 Visibility::Hidden,
-                children![plume(0), plume(1), plume(2),],
+                children![
+                    plume_bundle(assets, 0),
+                    plume_bundle(assets, 1),
+                    plume_bundle(assets, 2),
+                ],
             ),
             (
                 Name::new("Body"),
                 Shadow::default(),
-                Wiggle::with_seed(rand.random()),
+                Wiggle::default(),
                 Sprite {
                     image: assets.rocket_base.clone(),
                     anchor: Anchor::Center,
@@ -85,7 +71,7 @@ pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
                     offset: fin_offset,
                     scale_rotation: 0.5_f32.to_radians(),
                     scale_transform: 0.5,
-                    ..Wiggle::with_seed(rand.random())
+                    ..default()
                 },
                 LAYER_OFFSET_ROCKET_FIN_BG,
                 Sprite {
@@ -101,7 +87,7 @@ pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
                     offset: fin_offset,
                     scale_rotation: 0.5_f32.to_radians(),
                     scale_transform: 0.5,
-                    ..Wiggle::with_seed(rand.random())
+                    ..default()
                 },
                 LAYER_OFFSET_ROCKET_FIN_FG,
                 Sprite {
@@ -111,6 +97,23 @@ pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
                 },
             ),
         ],
+    )
+}
+
+fn plume_bundle(assets: &game::Assets, idx: i32) -> impl Bundle {
+    (
+        Name::new("Plume"),
+        Shadow::default(),
+        Wiggle {
+            scale_rotation: 10f32.to_radians(),
+            ..default()
+        },
+        LAYER_OFFSET_ROCKET_PLUME.offset_by(idx),
+        Sprite {
+            image: assets.plume[idx as usize].clone(),
+            anchor: Anchor::Center,
+            ..default()
+        },
     )
 }
 

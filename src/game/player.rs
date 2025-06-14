@@ -1,4 +1,3 @@
-use crate::common::rand::Rand;
 use crate::game;
 use crate::game::attraction::Attractable;
 use crate::game::cv::LAYER_ROCKET;
@@ -21,9 +20,9 @@ pub struct Thrust {
     pub force: Vec2,
 }
 
-pub fn bundle(assets: &game::Assets, rand: &mut Rand) -> impl Bundle {
+pub fn bundle(assets: &game::Assets) -> impl Bundle {
     (
-        rocket::bundle(assets, rand),
+        rocket::bundle(assets),
         LAYER_ROCKET,
         LinearVelocity::ZERO,
         ExternalForce::ZERO.with_persistence(false),
