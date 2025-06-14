@@ -11,7 +11,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        (update_input_state, mouse_input_start)
+        (update_input_state, mouse_input_start, touch_input_start)
             .chain()
             .in_set(AppSystems::RecordInput)
             .in_set(PausableSystems),
@@ -120,6 +120,38 @@ fn mouse_input_start(
                     commands.entity(entity).remove::<InputActive>();
                 }
             }
+        }
+    }
+}
+
+fn touch_input_start(
+    mut commands: Commands,
+    target_query: Query<(Entity, Option<&InputActive>), With<Input>>,
+    touches: Res<Touches>,
+) {
+    for touch in touches.iter_just_pressed() {
+        for (entity, active) in &target_query {
+            if active.is_some() {
+                continue;
+            }
+
+            commands.entity(entity).insert(InputActive {
+                start: touch.position(),
+                end: touch.position(),
+                touch_id: Some(touch.id()),
+            });
+        }
+    }
+
+    for touch in touches.iter_just_released() {
+        for (entity, active) in &target_query {
+            let active_touch_id = active.and_then(|a| a.touch_id);
+            if active_touch_id != Some(touch.id()) {
+                continue;
+            }
+
+            // touch for this input was just released
+            commands.entity(entity).remove::<InputActive>();
         }
     }
 }
