@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use image::{GrayAlphaImage, LumaA, Rgba, RgbaImage, imageops};
 use std::collections::HashMap;
-use std::time::Instant;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ShadowCache>();
@@ -75,7 +74,7 @@ fn add_shadow_to_entity(
         Some(handle) => handle,
         None => {
             #[cfg(not(target_family = "wasm"))]
-            let start = Instant::now();
+            let start = std::time::Instant::now();
 
             // we could not get a strong handle to the cached shadow.
             // need to create a new shadow from the image
@@ -90,7 +89,7 @@ fn add_shadow_to_entity(
 
             #[cfg(not(target_family = "wasm"))]
             {
-                let duration = Instant::now().duration_since(start);
+                let duration = std::time::Instant::now().duration_since(start);
                 info!(
                     "Creating shadow of size {}x{} took {:?}",
                     shadow.width(),
