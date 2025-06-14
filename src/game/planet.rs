@@ -2,6 +2,7 @@ use crate::common::stopwatch::Stopwatch;
 use crate::game::assets::PlanetAssets;
 use crate::game::attraction::Attractor;
 use crate::game::cv::LAYER_PLANETS;
+use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
 use avian2d::prelude::{Collider, ColliderDensity, RigidBody};
 use bevy::asset::RenderAssetUsages;
@@ -35,15 +36,18 @@ pub fn bundle(
         let size = cropped.rect.size().as_vec2() * scale;
 
         // calculate the offset in position
-        let offset = cropped.rect.min.as_vec2() * vec2(1.0, -1.0) / scale + vec2(-radius, radius);
+        let offset = cropped.rect.min.as_vec2() * vec2(1.0, -1.0) / scale
+            + vec2(-radius, radius)
+            + size * vec2(0.5, -0.5);
 
         (
             LAYER_PLANETS.offset_by(idx as i32),
             Wiggle::with_offset(offset),
+            Shadow::default(),
             Sprite {
                 image: cropped.handle.clone(),
                 custom_size: Some(size),
-                anchor: Anchor::TopLeft,
+                anchor: Anchor::Center,
                 ..default()
             },
         )
