@@ -13,7 +13,7 @@ pub struct Assets {
 
     pub star_small: Handle<Image>,
     pub star_large: Handle<Image>,
-
+    pub line: Handle<Image>,
     pub plume: [Handle<Image>; 3],
 
     pub planets: Vec<PlanetAssets>,
@@ -43,6 +43,8 @@ impl FromWorld for Assets {
 
             star_small: server.load("images/star-small.png"),
             star_large: server.load("images/star-large.png"),
+
+            line: server.load("images/line.png"),
 
             plume: [
                 server.load("images/plume1.png"),

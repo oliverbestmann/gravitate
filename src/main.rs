@@ -50,10 +50,7 @@ fn app_plugin(app: &mut App) {
             }),
     );
 
-    app.add_plugins((
-        avian2d::PhysicsPlugins::default(),
-        bevy_vector_shapes::Shape2dPlugin::default(),
-    ));
+    app.add_plugins((avian2d::PhysicsPlugins::default(),));
 
     #[cfg(debug_assertions)]
     app.add_plugins((
