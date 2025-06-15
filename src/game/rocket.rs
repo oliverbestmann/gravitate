@@ -6,7 +6,7 @@ use crate::game::player::Thrust;
 use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
 use crate::screens::Screen;
-use crate::{game, AppSystems};
+use crate::{AppSystems, game};
 use avian2d::prelude::{Collider, ExternalForce, RigidBody};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;

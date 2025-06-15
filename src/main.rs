@@ -61,7 +61,7 @@ fn app_plugin(app: &mut App) {
         bevy_inspector_egui::bevy_egui::EguiPlugin {
             enable_multipass_for_primary_context: true,
         },
-        bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
+        // bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
     ));
 
     // Add other plugins.

@@ -2,7 +2,7 @@ use crate::common::stopwatch::Stopwatch;
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use image::{imageops, GrayAlphaImage, LumaA, Rgba, RgbaImage};
+use image::{GrayAlphaImage, LumaA, Rgba, RgbaImage, imageops};
 use std::collections::HashMap;
 
 pub(super) fn plugin(app: &mut App) {
