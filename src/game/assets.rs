@@ -67,6 +67,16 @@ impl FromWorld for Assets {
                     server.load("images/planet-2-5.png"),
                     server.load("images/planet-2-6.png"),
                 ]),
+
+                PlanetAssets::new([
+                    server.load("images/planet-moon-1.png"),
+                    server.load("images/planet-moon-2.png"),
+                    server.load("images/planet-moon-3.png"),
+                    server.load("images/planet-moon-4.png"),
+                    server.load("images/planet-moon-5.png"),
+                    server.load("images/planet-moon-6.png"),
+                    server.load("images/planet-moon-7.png"),
+                ]),
             ],
         }
     }

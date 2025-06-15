@@ -36,7 +36,7 @@ pub fn bundle(
         let size = cropped.rect.size().as_vec2() * scale;
 
         // calculate the offset in position
-        let offset = cropped.rect.min.as_vec2() * vec2(1.0, -1.0) / scale
+        let offset = cropped.rect.min.as_vec2() * vec2(1.0, -1.0) * scale
             + vec2(-radius, radius)
             + size * vec2(0.5, -0.5);
 

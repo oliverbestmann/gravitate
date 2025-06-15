@@ -8,8 +8,8 @@ use crate::game::{planet, player};
 use crate::screens::Screen;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use rand::Rng;
 use rand::prelude::IndexedRandom;
+use rand::Rng;
 use std::f32::consts::PI;
 
 pub(super) fn plugin(app: &mut App) {
@@ -34,14 +34,19 @@ pub fn spawn_level(
 
     // spawn a planet
     commands.spawn((
-        Transform::from_xyz(0., 350., 0.),
+        Transform::from_xyz(-50., 350., 0.),
         planet::bundle(&assets.planets[0], &mut crop_cache, &mut images, 128.0),
     ));
 
     // spawn a planet
     commands.spawn((
-        Transform::from_xyz(0., 650., 0.),
+        Transform::from_xyz(100., 650., 0.),
         planet::bundle(&assets.planets[1], &mut crop_cache, &mut images, 128.0),
+    ));
+    // spawn a planet
+    commands.spawn((
+        Transform::from_xyz(60., -250., 0.),
+        planet::bundle(&assets.planets[2], &mut crop_cache, &mut images, 96.0),
     ));
 }
 
