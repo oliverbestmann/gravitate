@@ -1,5 +1,5 @@
+use bevy::platform::time::Instant;
 use std::fmt::Display;
-use std::time::Instant;
 use tracing::info;
 
 pub struct Stopwatch<S>
@@ -7,8 +7,6 @@ where
     S: Display,
 {
     desc: S,
-
-    #[cfg(not(target_family = "wasm"))]
     start: Instant,
 }
 
@@ -19,13 +17,11 @@ where
     pub fn new(desc: S) -> Self {
         Self {
             desc,
-            #[cfg(not(target_family = "wasm"))]
             start: Instant::now(),
         }
     }
 }
 
-#[cfg(not(target_family = "wasm"))]
 impl<S> Drop for Stopwatch<S>
 where
     S: Display,

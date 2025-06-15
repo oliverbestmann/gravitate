@@ -1,7 +1,8 @@
+use crate::common::stopwatch::Stopwatch;
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use image::{GrayAlphaImage, LumaA, Rgba, RgbaImage, imageops};
+use image::{imageops, GrayAlphaImage, LumaA, Rgba, RgbaImage};
 use std::collections::HashMap;
 
 pub(super) fn plugin(app: &mut App) {
@@ -73,12 +74,15 @@ fn add_shadow_to_entity(
     {
         Some(handle) => handle,
         None => {
-            #[cfg(not(target_family = "wasm"))]
-            let start = std::time::Instant::now();
-
             // we could not get a strong handle to the cached shadow.
             // need to create a new shadow from the image
             let image = images.get(&sprite.image).ok_or("image not found")?;
+
+            let _watch = Stopwatch::new(format!(
+                "Creating shadow for size {}x{}",
+                image.width(),
+                image.height()
+            ));
 
             // convert & create shadow
             let image = image.clone().try_into_dynamic()?;
@@ -86,17 +90,6 @@ fn add_shadow_to_entity(
 
             // create a bevy image from the shadow
             let shadow = Image::from_dynamic(shadow.into(), true, RenderAssetUsages::RENDER_WORLD);
-
-            #[cfg(not(target_family = "wasm"))]
-            {
-                let duration = std::time::Instant::now().duration_since(start);
-                info!(
-                    "Creating shadow of size {}x{} took {:?}",
-                    shadow.width(),
-                    shadow.height(),
-                    duration
-                );
-            }
 
             let handle = images.add(shadow);
 
