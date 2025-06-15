@@ -8,8 +8,8 @@ use crate::game::{planet, player};
 use crate::screens::Screen;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use rand::prelude::IndexedRandom;
 use rand::Rng;
+use rand::prelude::IndexedRandom;
 use std::f32::consts::PI;
 
 pub(super) fn plugin(app: &mut App) {
