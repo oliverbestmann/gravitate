@@ -7,8 +7,6 @@ use avian2d::prelude::PhysicsSet;
 use bevy::render::camera;
 use bevy::window::WindowResolution;
 use bevy::{asset::AssetMetaCheck, prelude::*};
-use bevy_inspector_egui::bevy_egui::EguiPlugin;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod asset_tracking;
 pub mod common;
@@ -60,10 +58,10 @@ fn app_plugin(app: &mut App) {
     #[cfg(debug_assertions)]
     app.add_plugins((
         avian2d::debug_render::PhysicsDebugPlugin::default(),
-        EguiPlugin {
+        bevy_inspector_egui::bevy_egui::EguiPlugin {
             enable_multipass_for_primary_context: true,
         },
-        WorldInspectorPlugin::new(),
+        bevy_inspector_egui::quick::WorldInspectorPlugin::new(),
     ));
 
     // Add other plugins.

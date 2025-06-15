@@ -6,7 +6,7 @@ use crate::game::player::Thrust;
 use crate::game::shadow::Shadow;
 use crate::game::wiggle::Wiggle;
 use crate::screens::Screen;
-use crate::{AppSystems, game};
+use crate::{game, AppSystems};
 use avian2d::prelude::{Collider, ExternalForce, RigidBody};
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -32,6 +32,46 @@ pub struct Rocket;
 
 #[derive(Component)]
 pub struct Plume;
+
+#[derive(Component, Reflect)]
+pub struct FuelTank {
+    pub capacity: Fuel,
+    pub remaining: Fuel,
+}
+
+impl FuelTank {
+    pub fn full(capacity: Fuel) -> Self {
+        FuelTank {
+            capacity,
+            remaining: capacity,
+        }
+    }
+
+    pub fn burn(&mut self, amount: Duration) {
+        self.remaining.burn(amount);
+    }
+}
+
+#[derive(Copy, Clone, Debug, Reflect)]
+pub struct Fuel(Duration);
+
+impl Fuel {
+    pub fn new(amount: Duration) -> Self {
+        Self(amount)
+    }
+
+    pub fn from_secs(seconds: u64) -> Self {
+        Self::new(Duration::from_secs(seconds))
+    }
+
+    pub fn as_secs(&self) -> f32 {
+        self.0.as_secs_f32()
+    }
+
+    pub fn burn(&mut self, amount: Duration) {
+        self.0 = self.0.saturating_sub(amount);
+    }
+}
 
 pub fn bundle(assets: &game::Assets) -> impl Bundle {
     let fin_offset = vec2(0., -40.);
@@ -119,12 +159,25 @@ fn plume_bundle(assets: &game::Assets, idx: i32) -> impl Bundle {
 
 fn apply_thrust(
     mut commands: Commands,
-    rocket: Query<(Entity, &mut Thrust, &mut ExternalForce), With<Rocket>>,
+    rocket: Query<
+        (
+            Entity,
+            &mut Thrust,
+            &mut ExternalForce,
+            Option<&mut FuelTank>,
+        ),
+        With<Rocket>,
+    >,
     time: Res<Time>,
 ) {
-    for (entity, mut thrust, mut external_force) in rocket {
+    for (entity, mut thrust, mut external_force, fuel_tank) in rocket {
         // reduce remaining thrust
         thrust.remaining = thrust.remaining.saturating_sub(time.delta());
+
+        // reduce fuel in tank
+        if let Some(mut tank) = fuel_tank {
+            tank.burn(time.delta());
+        }
 
         if thrust.remaining == Duration::ZERO {
             info!("Thrust has finished");

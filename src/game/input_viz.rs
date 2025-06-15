@@ -2,6 +2,7 @@ use crate::game::cv;
 use crate::game::cv::LAYER_PLAYER_INPUT;
 use crate::game::input::{InputActive, InputTransformContext};
 use crate::game::player::Player;
+use crate::game::rocket::FuelTank;
 use crate::screens::Screen;
 use crate::{AppSystems, MainCamera};
 use bevy::math::FloatPow;
@@ -30,20 +31,25 @@ fn spawn_burn_label(mut commands: Commands) {
 }
 
 fn visualize_thrust_input(
-    player: Query<(&Transform, &InputActive), With<Player>>,
+    player: Query<(&Transform, &InputActive, &FuelTank), With<Player>>,
     input_transform: Single<InputTransformContext, With<MainCamera>>,
 
-    mut burn_time_label: Single<
-        (&mut Text2d, &mut Visibility, &mut Transform),
+    burn_time_label: Single<
+        (&mut Text2d, &mut TextColor, &mut Visibility, &mut Transform),
         (With<BurnTimeText>, Without<Player>),
     >,
 
     mut painter: ShapePainter,
 ) {
-    let (burn_time_text, burn_time_visibility, burn_time_transform) = &mut *burn_time_label;
+    let (
+        mut burn_time_text,
+        mut burn_time_color,
+        mut burn_time_visibility,
+        mut burn_time_transform,
+    ) = burn_time_label.into_inner();
 
     // the input state from the player
-    let Ok((player, input)) = player.single() else {
+    let Ok((player, input, fuel)) = player.single() else {
         burn_time_visibility.set_if_neq(Visibility::Hidden);
         return;
     };
@@ -86,7 +92,17 @@ fn visualize_thrust_input(
         thrust_vec.normalize().y * 4.0 * thickness,
     );
 
-    burn_time_text.0 = format!("{:1.2}s", state.duration.as_secs_f32());
+    let burn_time = state.duration.as_secs_f32().min(fuel.remaining.as_secs());
+    let limited = state.duration.as_secs_f32() >= fuel.remaining.as_secs();
+
+    let color = if limited {
+        Color::srgba(1.0, 0.5, 0.5, 1.)
+    } else {
+        Color::WHITE
+    };
+
+    burn_time_text.0 = format!("{:1.2}s", burn_time);
+    burn_time_color.set_if_neq(TextColor(color));
     burn_time_visibility.set_if_neq(Visibility::Visible);
     burn_time_transform.translation = origin + (thrust_vec + spacing).extend(0.0);
 }

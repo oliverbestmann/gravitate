@@ -3,6 +3,7 @@ use crate::game::attraction::Attractable;
 use crate::game::cv::LAYER_ROCKET;
 use crate::game::input::{Input, InputActive, OnThurst};
 use crate::game::rocket;
+use crate::game::rocket::{Fuel, FuelTank};
 use avian2d::prelude::{ExternalForce, LinearVelocity};
 use bevy::prelude::*;
 use std::time::Duration;
@@ -28,6 +29,7 @@ pub fn bundle(assets: &game::Assets) -> impl Bundle {
         ExternalForce::ZERO.with_persistence(false),
         Attractable,
         Player,
+        FuelTank::full(Fuel::from_secs(20)),
         Input,
     )
 }
@@ -55,7 +57,7 @@ pub fn handle_on_thrust(
     mut commands: Commands,
     player: Single<Entity, With<Player>>,
 ) {
-    commands.entity(*player).insert(Thrust {
+    commands.entity(player.into_inner()).insert(Thrust {
         force: trigger.direction * 100_000.0,
         remaining: trigger.duration,
     });
